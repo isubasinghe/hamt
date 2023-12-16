@@ -1,0 +1,4 @@
+gcc
+%c -std=c11
+%h
+-Iinclude
