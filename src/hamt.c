@@ -50,7 +50,6 @@ hamt_node_t *find_node(hamt_node_t *root, uintptr_t key, char *found) {
 
 hamt_node_t *hamt_insert(hamt_node_t *from, uintptr_t key, void *value) {
   hamt_node_t *node = create_node(value);
-  nodescopy(from, node);
   return node;
 }
 
