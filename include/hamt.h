@@ -3,42 +3,42 @@
 
 #include <stdint.h>
 
-#ifndef SEED
-#define SEED 73802
-#endif
-
 #define NUM_CHILDREN 64
+#define MAX_LEVEL 8
 
-// m is the size of the 
-uint64_t xorhash_with_seed(char *s, uint64_t seed, uint64_t m) {
-    uint64_t h = seed;
-    char c;
-    for(int i=0; (c = s[i]) != '\0'; i++) {
-        h = h ^ ( (h << 5) + c + (h >> 2) );
-    }
-    return h%m;
-}
+static const uint64_t LARGE_PRIMES_U64[16] = {
+    18446744073709551557ULL,
+    18446744073709551533ULL,
+    18446744073709551521ULL,
+    18446744073709551437ULL,
+    18446744073709551427ULL,
+    18446744073709551359ULL,
+    18446744073709551337ULL,
+    18446744073709551293ULL,
+    18446744073709551263ULL,
+    18446744073709551253ULL,
+    18446744073709551191ULL,
+    18446744073709551163ULL,
+    18446744073709551113ULL,
+    18446744073709550873ULL,
+    18446744073709550791ULL,
+    18446744073709550773ULL
+};
 
-inline uint64_t xorhash(char *s, uint64_t m) {
-  return xorhash_with_seed(s, SEED, m);
-}
-
-uint32_t hash32(uint64_t x) {
+uint32_t hash32(uint64_t x, uint64_t level) {
   uint32_t low = (uint32_t)x;
   uint32_t high = (uint32_t)(x >> 32);
 
-  const static uint64_t a = SEED;
+  uint64_t a = LARGE_PRIMES_U64[level%16];
   const static uint64_t b = 1391994534;
   const static uint64_t c = 2147483647;
-
   return ((a * low + b * high + c) >> 32);
-
 }
 
-inline uint64_t hash64(uint64_t x) {
+inline uint64_t hash64(uint64_t x, uint64_t level) {
   uint64_t all = 0;
-  uint32_t low = hash32(x & 0x00000000FFFFFFFF);
-  uint32_t high = hash32(x & 0xFFFFFFFF00000000);
+  uint32_t low = hash32(x & 0x00000000FFFFFFFF, level);
+  uint32_t high = hash32(x & 0xFFFFFFFF00000000, level);
   all = (((uint64_t)high) << 32) | low;
   return all;
 }
@@ -115,6 +115,10 @@ inline uint64_t valmax63_to_bitpos(uint64_t val) {
     default:
              return 0;
   }
+}
+
+inline uint64_t get_index(uint64_t hash, uint64_t level) {
+  return (hash >> ((level%MAX_LEVEL) * 6)) & 0x3F;
 }
 
 #endif // HAMT_H

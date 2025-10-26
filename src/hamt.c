@@ -26,31 +26,51 @@ static void nodescopy(hamt_node_t *from, hamt_node_t *to) {
 hamt_node_t *create_node(void *value) {
   hamt_node_t *node = aligned_alloc(4, sizeof(hamt_node_t));
   node->value = value;
-  node->children = malloc(sizeof(hamt_node_t)*63);
-  memset(node->children, 0, sizeof(hamt_node_t)*63);
+  node->children = malloc(sizeof(hamt_node_t)*64);
+  memset(node->children, 0, sizeof(hamt_node_t)*64);
   return node;
+}
+
+void free_node(hamt_node_t *node) {
 }
 
 hamt_node_t *find_node(hamt_node_t *root, uintptr_t key, char *found) {
-  uint64_t hash = hash64(key);
-  hamt_node_t *h = root;
-  while(1) {
-    hamt_node_t *curr = h->children[hash & 0b0000000000000000000000000000000000000000000000000000000000111111];
-    if(curr->value == NULL) {
-      *found = false;
-      return curr;
-    }
-    if(key == curr->key) {
-      *found = true;
-      return curr;
-    }
-    h = curr;
-  }
+  uint64_t hash = hash64(key, 0);
+  return NULL;
 }
 
-hamt_node_t *hamt_insert(hamt_node_t *from, uintptr_t key, void *value) {
-  hamt_node_t *node = create_node(value);
-  return node;
+hamt_node_t *hamt_insert(hamt_node_t *from, uintptr_t key, void *value, uint64_t root_level) {
+  uint64_t level = root_level;
+  hamt_node_t *curr = from;
+  while(1) {
+    uint64_t hash = hash64(key, level);
+    uint64_t index =  get_index(hash, level);
+    if(curr->children[index] == NULL) {
+      hamt_node_t *node = create_node(value); 
+      node->key = key;
+      curr->children[index] = node;
+      return node;
+    }else if(curr->children[index]->value == NULL) {
+      curr = curr->children[index];
+    }else {
+      // collision case
+      // handle push down
+      hamt_node_t *internal_node = create_node(NULL);
+
+      hamt_insert(internal_node, curr->children[index]->key, curr->children[index]->value, root_level+1);
+      hamt_insert(internal_node, key, value, root_level + 1);
+
+      free_node(curr->children[index]);
+
+      curr->children[index] = internal_node;
+      // mark value and key NULL so that we can distinguish leaf and internal nodes
+      curr->children[index]->value = NULL;
+      curr->children[index]->key = 0;
+      return internal_node;
+    }
+    level++;
+  }
+  return NULL;
 }
 
 
