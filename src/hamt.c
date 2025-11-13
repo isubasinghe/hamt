@@ -81,8 +81,8 @@ hamt_node_t *hamt_upsert(hamt_node_t *from, uintptr_t key, void *value, uint64_t
       // handle push down
       hamt_node_t *internal_node = create_node(NULL);
 
-      hamt_upsert(internal_node, curr->children[index]->key, curr->children[index]->value, root_level+1);
-      hamt_upsert(internal_node, key, value, root_level + 1);
+      hamt_upsert(internal_node, curr->children[index]->key, curr->children[index]->value, level+1);
+      hamt_upsert(internal_node, key, value, level + 1);
 
       free_node(curr->children[index]);
 
