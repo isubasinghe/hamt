@@ -154,4 +154,7 @@ hamt_node_t *hamt_upsert(hamt_node_t *from, uint64_t key, void *value) {
   return NULL;
 }
 
+void *hamt_get(hamt_node_t *node, uint64_t key) {
+}
+
 // END OF FILE: FUCK YOU, MACHINE IS 64 BITS
