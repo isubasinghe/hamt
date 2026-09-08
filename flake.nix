@@ -37,8 +37,10 @@
         };
 
         devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
+          packages = with pkgs; [
             gcc
+            haskellPackages.shake
+            (haskellPackages.ghcWithPackages (ps: [ ps.shake ]))
           ];
         };
       });
