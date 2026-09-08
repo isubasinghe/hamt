@@ -2,3 +2,4 @@ _build/
 .ccls-cache/
 result/
 result
+.direnv/
